@@ -1,79 +1,79 @@
 import os
 import shutil
-
 import hashlib
 import time
 from itertools import chain
 
 
+
 def clean_folder(folder):
     while not os.path.isdir(folder):
-        print("Folder not found :( ",end='\n')
         print("Folder not found :( ", end='\n')
         folder = input('Re-enter a valid folder path : ')
     else:
-        print("Folder found !",end='\n')
         print("Folder found !", end='\n')
         print('____________________________________________________')
         sort_files(folder)
 
 
 def sort_files(folder):
-    find_doubles(folder)
     folder_hash(folder)
     ext_list = []
-
     li = os.listdir(folder)
-
     for i in li:
         file_name, extension = os.path.splitext(i)
         extension = extension[1:]
+        ext_list.append(str(extension))
+        if extension in ext_list:
+            if os.path.exists(folder + '/' + extension):
+                shutil.move(folder + '/' + i, folder + '/' + extension + '/' + i)
+            else:
+                os.makedirs(folder + '/' + extension)
                 shutil.move(folder + '/' + i, folder + '/' + extension + '/' + i)
 
     print("Your files have been sorted")
-    print("Current Folder -----> " ,folder," <-----")
     print("Current Folder -----> ", folder, " <-----")
     print('____________________________________________________')
 
     f_count(folder)
-    after_sort(folder,li)
     after_sort(folder, li)
     delete_folder(folder)
 
 
 def f_count(folder):
     no_ext = 0
-    totalFiles = 0
-    totalDir = 0
     total_files = 0
     total_dir = 0
     for base, dirs, files in os.walk(folder):
-        #print('Searching in : ', base)
         # print('Searching in : ', base)
         for directories in dirs:
-            totalDir += 1
             total_dir += 1
         for Files in files:
-            totalFiles += 1
             total_files += 1
             file_name, extension = os.path.splitext(Files)
             if extension == "":
-                no_ext+=1
                 no_ext += 1
     print("There is ", no_ext, "file(s) without extention(s)")
-    print("Your total files",totalFiles)
-    print("Your total folders",totalDir)
     print("Your total files", total_files)
     print("Your total folders", total_dir)
     print('____________________________________________________')
 
 
-
-def after_sort(folder,li):
 def after_sort(folder, li):
     print(len(li), "Folders recently created : ")
     li_ = os.listdir(folder)
     for i in li_:
+        print("~ ", i, end="\n")
+    print('____________________________________________________')
+
+
+def delete_folder(folder):
+    val = input("Do you want to delete any of these folders ? Y/N : ")
+    val = str(val)[0].upper().strip()
+    while val not in ['Y', 'N']:
+        val = input("Input Yes (Y) or No (N) : ")
+    if val == 'Y':
+        to_remove = input("Which extension ?  ")
         folder2 = folder + '/' + str(to_remove)
         shutil.rmtree(folder2)
         print(to_remove, "is deleted !")
@@ -81,10 +81,6 @@ def after_sort(folder, li):
     else:
         print("Alright Alright bye ...")
         print('____________________________________________________')
-
-
-def find_doubles(folder):
-    print("hi")
 
 
 def file_sha256(f_path):
@@ -140,10 +136,17 @@ def folder_hash(folder):
                     print(to_delete, " is deleted")
                     print('____________________________________________________')
 
+def main():
+    start_time = time.time()
+    clean_folder(input('Enter folder path : '))
+    print("___________________ END OF EXECUTION _____________________")
+    print("--------------------- %.2f seconds -----------------------" % (time.time() - start_time))
 
 start_time = time.time()
 clean_folder(input('Enter folder path : '))
 print("___________________ END OF EXECUTION _____________________")
 print("--------------------- %.2f seconds -----------------------" % (time.time() - start_time))
+if __name__ == "__main__":
+    main()
 
 # C:/Users/Admin/Downloads
