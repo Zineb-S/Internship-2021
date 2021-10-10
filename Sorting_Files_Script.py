@@ -1,30 +1,26 @@
 import os
-#  Permet l'utilisation des fonctionnalités dépendantes du système d'exploitation
-# ( Dans ce code --> Manipuler les chemins des fichiers et leurs extensions)
-
-import os
 import shutil
-#  Manipulation de fichiers et de répertoires de haut niveau
-# ( Dans ce code --> Déplacer les fichiers )
 
-dirName = input('Enter folder path : ')
-# Saisie du chemin du fichier qu'on veut filtrer
+import hashlib
+import time
+from itertools import chain
 
 
-li = os.listdir(dirName)
-# Renvoie une liste contenant les noms des entrées (fichiers) dans le répertoire donné par chemin
-# exemple : ['Convention de stage.xlsx', 'python-3.9.6-amd64.exe','Sujet_de_stage.pdf']
 def clean_folder(folder):
     while not os.path.isdir(folder):
         print("Folder not found :( ",end='\n')
+        print("Folder not found :( ", end='\n')
         folder = input('Re-enter a valid folder path : ')
     else:
         print("Folder found !",end='\n')
+        print("Folder found !", end='\n')
         print('____________________________________________________')
         sort_files(folder)
 
+
 def sort_files(folder):
     find_doubles(folder)
+    folder_hash(folder)
     ext_list = []
 
     li = os.listdir(folder)
@@ -32,81 +28,122 @@ def sort_files(folder):
     for i in li:
         file_name, extension = os.path.splitext(i)
         extension = extension[1:]
-        ext_list.append(str(extension))
-        if extension in ext_list:
-            if os.path.exists(folder + '/' + extension):
-                shutil.move(folder + '/' + i, folder + '/' + extension + '/' + i)
-            else:
-                os.makedirs(folder + '/' + extension)
                 shutil.move(folder + '/' + i, folder + '/' + extension + '/' + i)
 
     print("Your files have been sorted")
     print("Current Folder -----> " ,folder," <-----")
+    print("Current Folder -----> ", folder, " <-----")
     print('____________________________________________________')
 
-for i in li:
-    # Parcourir la liste contenant les  noms des entrées
     f_count(folder)
     after_sort(folder,li)
+    after_sort(folder, li)
     delete_folder(folder)
 
-    fileName, extension = os.path.splitext(i)
-    # Séparation des extensions des noms des fichiers en une paire (racine, ext)
-    # racine + ext == chemin du fichier
-    # ext soit vide ou commence par un point et contienne au plus un point.
+
 def f_count(folder):
     no_ext = 0
     totalFiles = 0
     totalDir = 0
+    total_files = 0
+    total_dir = 0
     for base, dirs, files in os.walk(folder):
         #print('Searching in : ', base)
+        # print('Searching in : ', base)
         for directories in dirs:
             totalDir += 1
+            total_dir += 1
         for Files in files:
             totalFiles += 1
+            total_files += 1
             file_name, extension = os.path.splitext(Files)
             if extension == "":
                 no_ext+=1
+                no_ext += 1
     print("There is ", no_ext, "file(s) without extention(s)")
     print("Your total files",totalFiles)
     print("Your total folders",totalDir)
+    print("Your total files", total_files)
+    print("Your total folders", total_dir)
     print('____________________________________________________')
 
-    extension = extension[1:] # Enlever le (.)
 
-    if extension == "":  # On passe au cas d'abscence d'extension
-        continue
 
-    if os.path.exists(dirName + '/' + extension):                               # True si chemin fait référence à un chemin existant ,False si non
-        shutil.move(dirName + '/' + i, dirName + '/' + extension + '/' + i)     # Si le chemin est existant on y déplace le fichier
-                   # shutil.move(src, dst, copy_function=copy2)
 def after_sort(folder,li):
+def after_sort(folder, li):
     print(len(li), "Folders recently created : ")
     li_ = os.listdir(folder)
     for i in li_:
-        print("~ ", i, end="\n")
-    print('____________________________________________________')
-
-
-def delete_folder(folder):
-    val = input("Do you want to delete any of these folders ? Y/N : ")
-    val = str(val)[0].upper().strip()
-    while val not in ['Y', 'N']:
-        val = input("Input Yes (Y) or No (N) : ")
-    if val == 'Y':
-        to_remove = input("Which extension ?  ")
         folder2 = folder + '/' + str(to_remove)
         shutil.rmtree(folder2)
         print(to_remove, "is deleted !")
+        print('____________________________________________________')
     else:
-        os.makedirs(dirName + '/' + extension)                                  # Si non on crée un répertoire
-        shutil.move(dirName + '/' + i, dirName + '/' + extension + '/' + i)     # On y déplace le fichier
         print("Alright Alright bye ...")
+        print('____________________________________________________')
 
 
 def find_doubles(folder):
     print("hi")
 
 
+def file_sha256(f_path):
+    with open(f_path, "rb") as f:
+        file_hash = hashlib.sha256()
+        while chunk := f.read(1024 * 1024):
+            file_hash.update(chunk)
+    return file_hash.hexdigest()
+
+
+def folder_hash(folder):
+    info = {}
+    for file in os.listdir(folder):
+        path = os.path.join(folder, file)
+        if os.path.isdir(path):
+            folder_hash(path)
+        else:
+            # print("File: %s" % path)
+            sha256 = file_sha256(path)
+            # print("SHA256: %s\n" % sha256)
+            b = os.path.getsize(path)
+            # print(b)
+            info[file] = (b, sha256)
+    # printing initial_dictionary
+    # print("initial_dictionary", str(info))
+    # finding duplicate values
+    # from dictionary using set
+    rev_dict = {}
+    for key, value in info.items():
+        rev_dict.setdefault(value, set()).add(key)
+
+    result = set(chain.from_iterable(
+        values for key, values in rev_dict.items()
+        if len(values) > 1))
+    # print(result)
+    # printing result
+    if str(result) == "set()":
+        print("There are no duplicates in ", folder)
+    else:
+        print("The duplicates in ", folder, " are : ", str(result))
+        print('____________________________________________________')
+        val = input("Do you want to delete any of these files ? Y/N : ")
+        val = str(val)[0].upper().strip()
+        while val not in ['Y', 'N']:
+            val = input("Input Yes (Y) or No (N) : ")
+        if val == 'Y':
+            to_delete = str(input("Which one do you want to delete ? "))
+            li = os.listdir(folder)
+            for j in li:
+                file_name, extension = os.path.splitext(j)
+                if to_delete == j and j in result:
+                    os.remove(folder + '/' + file_name + extension)
+                    print(to_delete, " is deleted")
+                    print('____________________________________________________')
+
+
+start_time = time.time()
 clean_folder(input('Enter folder path : '))
+print("___________________ END OF EXECUTION _____________________")
+print("--------------------- %.2f seconds -----------------------" % (time.time() - start_time))
+
 # C:/Users/Admin/Downloads
