@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ma premiere application</title>
+</head>
+<body>
+<h1 style="text-align:center;color:blue">Bienvenue à SII</h1>
+{% for question in questions %}
+    <h3 style="color:red">{{ question.id }} ) {{ question.user.username }} :  </h3> <h3 >{{question.titre}}</h3>
+{% endfor %}
+</body>
+</html>
