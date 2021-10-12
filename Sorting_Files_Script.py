@@ -78,7 +78,7 @@ class Folder:
     def after_sort(self, folder, li):
 
         print('___________________________NEW FOLDERS_________________________')
-        print(len(li), "Folders recently created : ")
+        
         li_ = os.listdir(self.folder)
         f = open('C:/Users/Admin/Desktop/Storage.txt', "a")
         f.write(self.folder + "\n")
@@ -87,6 +87,7 @@ class Folder:
             H = str(i) + '\n'
             f.write(H)
         f.close()
+        print(len(li_), "Folders recently created ! ")
         print('_______________________________________________________________')
 
     # it doesn't work when there is an empty folders + if there are files that aren't sorted
